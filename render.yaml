@@ -1,0 +1,65 @@
+# Render Blueprint — creates the API service with the right build, start and
+# health-check settings. Everything marked `sync: false` is filled in by you in
+# the Render dashboard (or during "New → Blueprint").
+#
+# The database is deliberately not part of this file: Render's free PostgreSQL
+# expires after 30 days, so the guide uses Neon (free, no expiry) instead.
+services:
+  - type: web
+    name: portofolio-izzul-be
+    runtime: node
+    plan: free
+    region: singapore
+    branch: main
+    autoDeploy: true
+    buildCommand: npm ci && npm run build
+    # Migrations run on every boot; they are no-ops when the database is current.
+    startCommand: npm run db:migrate:prod && npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: TRUST_PROXY
+        value: "1"
+      - key: COOKIE_SAMESITE
+        value: lax
+      - key: MEDIA_DRIVER
+        value: auto
+      - key: GITHUB_BRANCH
+        value: main
+      - key: GITHUB_MEDIA_PATH
+        value: public/media
+      # Generated once by Render and kept secret.
+      - key: JWT_ACCESS_SECRET
+        generateValue: true
+      # --- fill these in ---------------------------------------------------
+      - key: DATABASE_URL # Neon connection string (use the pooled one)
+        sync: false
+      - key: CORS_ORIGINS # https://your-site.vercel.app
+        sync: false
+      - key: SITE_URL # https://your-site.vercel.app
+        sync: false
+      - key: ADMIN_NAME
+        sync: false
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      # --- optional: uploads from the production CMS ------------------------
+      - key: GITHUB_TOKEN # fine-grained token, Contents: Read and write
+        sync: false
+      - key: GITHUB_REPO # Izzulfr/portofolio-izzul-fe
+        sync: false
+      # --- optional: email alert for new contact messages -------------------
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        sync: false
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+      - key: MAIL_FROM
+        sync: false
+      - key: CONTACT_NOTIFY_EMAIL
+        sync: false

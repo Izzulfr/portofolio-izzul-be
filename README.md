@@ -162,19 +162,22 @@ things to review before launch:
 
 ## Deployment
 
-1. Create a PostgreSQL database (Neon, Supabase, Railway…).
-2. Run migrations and the seed once from your machine, pointing at it:
+Full walkthrough for **Vercel + Render + Neon**: [DEPLOYMENT.md](DEPLOYMENT.md).
+
+Short version:
+
+1. Create a PostgreSQL database (Neon's free tier has no expiry; Render's free one is deleted
+   after 30 days).
+2. Deploy this repository with the included `render.yaml` blueprint. It sets the build command
+   (`npm ci && npm run build`), the start command (`npm run db:migrate:prod && npm start`, so
+   migrations run on every boot) and the `/health` check, and asks for the secrets.
+3. Seed the content once from your machine:
    ```bash
-   DATABASE_URL="postgres://…" npm run db:migrate
    DATABASE_URL="postgres://…" npm run db:seed
    ```
-3. Deploy with build command `npm ci && npm run build` and start command
-   `npm run db:migrate:prod && npm start`.
-4. Set `NODE_ENV=production`, `DATABASE_URL`, `JWT_ACCESS_SECRET`, `TRUST_PROXY=1`, and
-   `CORS_ORIGINS=https://your-site`. If the site proxies `/api` to this server (recommended,
-   see the frontend README), keep `COOKIE_SAMESITE=lax`; otherwise use `none`.
-5. For uploads from the production CMS, add the GitHub variables from
-   [Media storage](#media-storage). Without them the CMS can still pick existing files.
+4. Deploy the frontend to Vercel and set `CORS_ORIGINS` (and `SITE_URL`) here to its URL.
+5. Optional: add `GITHUB_TOKEN` and `GITHUB_REPO` so the production CMS can upload images —
+   see [Media storage](#media-storage).
 
 ## Project structure
 
