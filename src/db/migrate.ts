@@ -1,0 +1,24 @@
+import { drizzle } from 'drizzle-orm/postgres-js'
+import { migrate } from 'drizzle-orm/postgres-js/migrator'
+import postgres from 'postgres'
+
+// Deliberately independent of config/env.ts: running migrations should only
+// need a database URL, not the JWT secret and the rest of the app config.
+const url = process.env.DATABASE_URL
+
+if (!url) {
+  console.error('DATABASE_URL is not set.')
+  process.exit(1)
+}
+
+const client = postgres(url, { max: 1, onnotice: () => {} })
+
+try {
+  await migrate(drizzle(client), { migrationsFolder: 'drizzle' })
+  console.log('Migrations applied.')
+} catch (error) {
+  console.error('Migration failed:', error)
+  process.exitCode = 1
+} finally {
+  await client.end()
+}

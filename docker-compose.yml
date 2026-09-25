@@ -1,0 +1,23 @@
+services:
+  postgres:
+    image: postgres:18-alpine
+    container_name: portfolio-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: portfolio
+      POSTGRES_PASSWORD: portfolio
+      POSTGRES_DB: portfolio
+    ports:
+      # 5434 on the host, so it never collides with a local PostgreSQL on 5432.
+      - "5434:5432"
+    volumes:
+      # PostgreSQL 18 images keep their data under /var/lib/postgresql/18.
+      - portfolio-pgdata:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U portfolio -d portfolio"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  portfolio-pgdata:
