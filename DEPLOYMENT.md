@@ -145,7 +145,7 @@ Nothing changes on the API side: the browser still talks only to your domain.
 | `CORS_ORIGINS` | yes | Comma-separated site origins |
 | `SITE_URL` | recommended | Used in notification emails |
 | `ADMIN_NAME`, `ADMIN_EMAIL`, `ADMIN_PASSWORD` | first deploy | Only used while seeding |
-| `NODE_ENV`, `TRUST_PROXY`, `COOKIE_SAMESITE`, `MEDIA_DRIVER` | preset | From `render.yaml` |
+| `NODE_ENV`, `TRUST_PROXY`, `COOKIE_SAMESITE`, `MEDIA_DRIVER` | preset | From `render.yaml`. `TRUST_PROXY=2` counts both proxies (Vercel, then Render) so rate limits see the visitor's IP; use `1` if the API is called directly instead of through the rewrite. |
 | `GITHUB_TOKEN`, `GITHUB_REPO` | optional | CMS uploads (step 6) |
 | `SMTP_*`, `MAIL_FROM`, `CONTACT_NOTIFY_EMAIL` | optional | Contact alerts (step 7) |
 
@@ -156,6 +156,8 @@ Nothing changes on the API side: the browser still talks only to your domain.
 | Site loads, content shows "could not load" | API asleep (wait and retry) or `CORS_ORIGINS` does not match the site URL exactly, including `https://` and no trailing slash. |
 | `/api/...` returns Vercel's 404 page | The rewrite destination in `vercel.json` is not your Render URL. |
 | Signed out immediately after signing in | The browser refused the cookie. Keep `VITE_API_URL` unset so the API is proxied, or set `COOKIE_SAMESITE=none` **and** `COOKIE_SECURE=true` on Render. |
+| Every `/api/...` route answers 500 `INTERNAL_ERROR` while `/health` says `database: up` | The database connects but has no tables: migrations never ran. Set the Render start command to `npm run db:migrate:prod && npm start` and redeploy, or apply them once from your machine with `DATABASE_URL` pointing at Neon. An empty but migrated database answers 503 `NOT_SEEDED` instead. |
+| Browser console shows a CORS error | The site is calling the API cross-origin. Delete `VITE_API_URL` in the Vercel project so the bundle uses `/api/v1` and goes through the rewrite, then redeploy. `CORS_ORIGINS` on Render must list the site origin either way — sign-in checks the `Origin` header even through the proxy. |
 | `relation "projects" does not exist` | Migrations did not run. Check the Render start command is `npm run db:migrate:prod && npm start`. |
 | Images 404 on the site | The file is not committed in `portfolio-frontend/public/media`. Pull, commit and push. |
 | CMS says "Read-only" | No `GITHUB_TOKEN` on Render — expected until step 6. |

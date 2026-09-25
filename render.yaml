@@ -19,8 +19,10 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
+      # Two proxies sit in front of this service: Vercel's rewrite, then Render's
+      # router. Trusting both makes rate limits count the visitor, not Vercel.
       - key: TRUST_PROXY
-        value: "1"
+        value: "2"
       - key: COOKIE_SAMESITE
         value: lax
       - key: MEDIA_DRIVER
